@@ -1,21 +1,17 @@
 package netology.ru.server;
 
+import java.util.logging.Logger;
+
 public class User {
-    private static String name;
-    private static String nick;
-
-
-    public User(String name, String nick) {
-        this.name = name;
-        this.nick = nick;
-    }
-
+    Logger logger = ServerLogger.getInstance();
+    private final String name;
     public User(String name) {
+        logger.fine("Запуск конструктора создания пользователя.");
         this.name = name;
     }
 
-    public static String getName() {
-        return name;
+    public String getUserName() {
+        return this.name;
     }
 
     @Override
