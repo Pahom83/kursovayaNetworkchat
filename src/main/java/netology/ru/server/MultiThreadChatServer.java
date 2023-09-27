@@ -1,32 +1,31 @@
 package netology.ru.server;
 
-
 import java.net.*;
 import java.io.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
-import java.util.logging.*;
 
 public class MultiThreadChatServer {
-    private static final Logger logger = ServerLogger.getInstance();
+    private static final ServerHistoryLogger logger = ServerHistoryLogger.getInstance();
 
     public static CopyOnWriteArrayList<Server> serverList = new CopyOnWriteArrayList<>();
     public static ConcurrentHashMap<Server, User> userMap = new ConcurrentHashMap<>();
     private static int port = 8888;
 
     public static void main(String[] args) {
-        logger.info("Запуск сервера");
+        logger.debug("Запуск сервера");
         File settings = new File("src/main/resources/server_settings.ini");
         if (settings.exists()) {
-            logger.info("Обнаружен файл настроек " + settings.getName());
+            logger.debug("Обнаружен файл настроек " + settings.getName());
             try (BufferedReader reader = new BufferedReader(new FileReader(settings))) {
                 String line = reader.readLine();
                 while (line != null) {
                     if (line.startsWith("port:")) {
                         try {
                             port = Integer.parseInt(line.substring(6));
+                            logger.debug("Установлен порт из файла настроек: " + port);
                         } catch (Exception e) {
-                            logger.warning("Порт в настройках не установлен. Используется порт по умолчанию: " + port);
+                            logger.debug("Порт в настройках не установлен. Используется порт по умолчанию: " + port);
                         }
                     }
                     line = reader.readLine();
@@ -40,8 +39,8 @@ public class MultiThreadChatServer {
                     FileWriter writer = new FileWriter(settings);
                     writer.write("port: " + port + "\n");
                     writer.close();
-                    System.out.println("Файл настроек не найден. Используются порт по умолчанию: " + port);
-                    System.out.println("Настройки сохранены в файл настроек \"server_settings.ini\".");
+                    logger.debug("Файл настроек не найден. Используются порт по умолчанию: " + port);
+                    logger.debug("Настройки сохранены в файл настроек \"server_settings.ini\".");
                 }
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -52,17 +51,17 @@ public class MultiThreadChatServer {
             while (!server.isClosed()) {
                 for (Server serv : serverList) {
                     if (!serv.isAlive()) {
-                        logger.info("Обнаружено не активное соединение с клиентом. Удаляем...");
+                        logger.debug("Обнаружено не активное соединение с клиентом. Удаляем...");
                         serverList.remove(serv);
                         userMap.remove(serv);
-                        logger.info("Удаление не активного соединения завершено.");
+                        logger.debug("Удаление не активного соединения завершено.");
                     }
                 }
                 // Блокируется до возникновения нового соединения:
                 Socket socket = server.accept();
                 try {
+                    logger.debug("Подключился новый пользователь.");
                     serverList.add(new Server(socket)); // добавить новое соединение в список
-                    logger.info("Подключился новый пользователь.");
                 } catch (IOException e) {
                     socket.close();
                 }

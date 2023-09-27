@@ -59,9 +59,11 @@ public class Client {
             Thread inputMessages = new Thread(() -> {
                 while (!clientSocket.isClosed()) {
                     try {
-                        String msg = inputMessage.readLine();
-                        logger.info(msg);
-                        System.out.println(msg);
+                        if (inputMessage.ready()){
+                            String msg = inputMessage.readLine();
+                            logger.info(msg);
+                            System.out.println(msg);
+                        }
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
